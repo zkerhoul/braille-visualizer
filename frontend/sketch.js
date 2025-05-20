@@ -1,5 +1,4 @@
 // === frontend/sketch.js ===
-console.log("sketch loaded");
 let rows = 20;
 let cols = 96;
 let cellW, cellH;

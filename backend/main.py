@@ -1,19 +1,30 @@
 # === backend/main.py ===
+import os
+import uvicorn
+import asyncio
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-
-import os
-import uvicorn
-import asyncio
 
 from serial_read import SerialHandler
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_PATH = os.path.join(BASE_PATH, 'frontend')
 
-app = FastAPI()
+# serial connection
+ser = SerialHandler()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("App starting up...")
+    yield
+    print("App shutting down...")
+    ser.close()
+
+app = FastAPI(lifespan=lifespan)
 
 # serve static frontend from the frontend folder
 app.mount("/static", StaticFiles(directory=FRONTEND_PATH, html=True), name="static")
@@ -28,9 +39,6 @@ app.add_middleware(
 
 clients = []
 
-# serial connection
-ser = SerialHandler()
-
 # serve index manually
 @app.get("/")
 async def get_index():
@@ -42,26 +50,25 @@ async def websocket_endpoint(websocket: WebSocket):
     clients.append(websocket)
     print("Client connected")
 
+    last_matrix = None
+
     try:
         while True:
             with ser.lock:
                 matrix = ser.matrix
-            if matrix is not None:
+            if matrix is not None and matrix != last_matrix:
                 print("Sending matrix...")
                 for client in clients:
                     try:
                         await client.send_json(matrix)
                     except Exception as e:
                         print("Error sending matrix: ", e)
+                last_matrix = matrix
             await asyncio.sleep(0.05)
 
     except WebSocketDisconnect:
         clients.remove(websocket)
         print("Client disconnected")
-
-@app.on_event("shutdown")
-def on_shutdown():
-    ser.close()
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ import serial
 import threading
 import numpy as np
 
-SERIAL_PORT = 'COM5'
+SERIAL_PORT = '/dev/tty.usbmodem1101'
 BAUDRATE = 115200
 
 class SerialHandler:
