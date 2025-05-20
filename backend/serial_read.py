@@ -80,3 +80,9 @@ class SerialHandler:
 
             else:
                 print(f"Unknown header: {header}")
+
+    def close(self):
+        self.running = False
+        if self.ser.is_open:
+            self.ser.close()
+            print("Serial port closed")
