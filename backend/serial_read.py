@@ -1,20 +1,30 @@
-# === backend/serial_matrix.py ===
+# === backend/serial_read.py ===
 import serial
+import threading
 import numpy as np
 
-SERIAL_PORT = '/dev/ttyACM0'
+SERIAL_PORT = 'COM4'
 BAUDRATE = 115200
 
-# initialize serial connection
-ser = serial.Serial(SERIAL_PORT, BAUDRATE)
+class SerialHandler:
+    def __init__(self, port=SERIAL_PORT, baudrate=BAUDRATE):
+        # initialize serial connection
+        self.ser = serial.Serial(port, baudrate)
+
+        self.matrix = None
+        self.lock = threading.Lock()
+        self.running = True
+
+        self.read_thread = threading.Thread(target=self.read_loop, daemon=True)
+        self.read_thread.start()
 
 def read_bytes(self, n):
     data = b''
     while len(data) < n:
-        data += ser.read(n - len(data))
+        data += self.ser.read(n - len(data))
     return data
 
-def read_serial(self):
+def read_loop(self):
     while self.running:
         try:
             header = self.read_bytes(4)
@@ -27,11 +37,13 @@ def read_serial(self):
                 n = int.from_bytes(self.read_bytes(2), 'big')
                 m = int.from_bytes(self.read_bytes(2), 'big')
 
-                raw_arr = self.read_bytes(n * m * np.dtype('int32').itemsize)
-                arr = np.frombuffer(raw_arr, dtype=np.int32).reshape((n, m))
+                raw_mat = self.read_bytes(n * m * np.dtype('int32').itemsize)
+                mat = np.frombuffer(raw_mat, dtype=np.int32).reshape((n, m))
 
-                print(f"Received array of shape {arr.shape}")
-                self.root.after(0, self.update_dots, arr)
+                with self.lock:
+                    self.matrix = mat
+                print(f"Received matrix of shape {mat.shape}")
+
             except Exception as e:
                 print(f"Failed to handle DOTS message: {e}")
 
@@ -68,5 +80,3 @@ def read_serial(self):
 
         else:
             print(f"Unknown header: {header}")
-
-

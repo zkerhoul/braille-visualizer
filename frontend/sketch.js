@@ -43,5 +43,3 @@ function draw() {
     }
   }
 }
-
-// === frontend/sketch.js ===
