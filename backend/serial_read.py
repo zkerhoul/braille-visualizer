@@ -29,17 +29,17 @@ class SerialHandler:
     def sync_header(self):
         while self.running:
             try:
-                # read one byte at a time until 'M' is found
+                # read one byte at a time until 'M' is found (indicates start of message)
                 b = self.ser.read(1)
                 if b == b'M':
                     peek = self.ser.read(3)
-                    if peek == b'FDN':
+                    if peek == b'FDN': # finger down
                         return b'MFDN'
-                    elif peek ==b'FUP':
+                    elif peek ==b'FUP': # finger up
                         return b'MFUP'
-                    elif peek == b'FMV':
+                    elif peek == b'FMV': # finger move
                         return b'MFMV'
-                    elif peek == b'MAT':
+                    elif peek == b'MAT': # matrix update
                         return b'MMAT'
                     else:
                         # skip ahead one byte and try again

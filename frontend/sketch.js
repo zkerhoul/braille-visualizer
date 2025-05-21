@@ -1,7 +1,8 @@
 // === frontend/sketch.js ===
 let rows = 20;
 let cols = 96;
-let cellW, cellH;
+let cellWidth, cellHeight;
+
 let dotMatrix = [];
 let fingers = {};
 
@@ -10,10 +11,11 @@ let socket = new WebSocket(WS_HOST);
 
 function setup() {
   createCanvas(1600, 350);
-  cellW = width / cols;
-  cellH = height / rows;
 
-  // Initialize empty matrix
+  cellWidth = width / cols;
+  cellHeight = height / rows;
+
+  // initialize empty matrix
   for (let i = 0; i < rows; i++) {
     dotMatrix[i] = Array(cols).fill(0);
   }
@@ -34,7 +36,7 @@ function handleMessage(event) {
       down: false,
       x: null,
       y: null,
-      color: color(random(255), random(255), random(255)),
+      color: color(random(255), random(255), random(255), 200),
     };
     if (msg.action == "down") {
       finger.down = true;
@@ -47,8 +49,8 @@ function handleMessage(event) {
     } else if (msg.action == "move") {
       if (finger.down == true) {
         stroke(finger.color);
-        strokeWeight(2);
-        line(finger.x, finger.y, msg.x, msg.y, msg.color);
+        strokeWeight(40);
+        line(finger.x, finger.y, msg.x, msg.y);
       }
       finger.x = msg.x;
       finger.y = msg.y;
@@ -58,16 +60,18 @@ function handleMessage(event) {
 }
 
 function draw() {
-  background(20);
   noStroke();
+  fill(0, 0, 0, 20);
+  rect(0, 0, width, height);
+
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
-      let x = j * cellW;
-      let y = i * cellH;
+      let x = j * cellWidth;
+      let y = i * cellHeight;
       fill(dotMatrix[i][j] ? "white" : "#444");
       // only draw the circles that appear on the device
       if (j % 3 != 2 && i % 5 != 4) {
-        ellipse(x + cellW / 2, y + cellH / 2, cellW * 0.7, cellH * 0.7);
+        ellipse(x + cellWidth / 2, y + cellHeight / 2, cellWidth * 0.7, cellHeight * 0.7);
       }
     }
   }

@@ -50,8 +50,6 @@ async def websocket_endpoint(websocket: WebSocket):
     clients.append(websocket)
     print("Client connected")
 
-    last_matrix = None
-
     try:
         while True:
             try:
