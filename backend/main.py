@@ -54,21 +54,22 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
-            with ser.lock:
-                matrix = ser.matrix
-            if matrix is not None and matrix != last_matrix:
-                print("Sending matrix...")
-                for client in clients:
-                    try:
-                        await client.send_json(matrix)
-                    except Exception as e:
-                        print("Error sending matrix: ", e)
-                last_matrix = matrix
-            await asyncio.sleep(0.05)
+            try:
+                event = ser.events.get_nowait()
+            except Exception:
+                await asyncio.sleep(0.01)
+                continue
+
+            for client in clients:
+                try:
+                    await client.send_json(event)
+                except Exception as e:
+                    print("Error sending event to sketch: ", e)
 
     except WebSocketDisconnect:
-        clients.remove(websocket)
         print("Client disconnected")
+        if websocket in clients:
+            clients.remove(websocket)
 
 
 if __name__ == "__main__":

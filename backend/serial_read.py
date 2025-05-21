@@ -2,6 +2,7 @@
 import serial
 import threading
 import numpy as np
+import queue
 
 SERIAL_PORT = '/dev/tty.usbmodem1101'
 BAUDRATE = 115200
@@ -11,10 +12,11 @@ class SerialHandler:
         # initialize serial connection
         self.ser = serial.Serial(port, baudrate)
 
-        self.matrix = None
-        self.lock = threading.Lock()
         self.running = True
+        self.matrix = None
+        self.events = queue.Queue()
 
+        self.lock = threading.Lock()
         self.read_thread = threading.Thread(target=self.read_loop, daemon=True)
         self.read_thread.start()
 
@@ -63,17 +65,23 @@ class SerialHandler:
 
                     with self.lock:
                         self.matrix = mat.tolist()
-                    print(f"Received matrix of shape {mat.shape}")
+                    self.events.put({'type': 'matrix', 'mat': self.matrix})
+                    # print(f"Received matrix of shape ({n},{m})")
 
                 except Exception as e:
-                    print(f"Failed to handle MMAT message: {e}")
+                    print(f"Error processing MAT: {e}")
 
             elif header == b'MFDN':
                 try:
                     x = int.from_bytes(self.read_bytes(2), 'big')
                     y = int.from_bytes(self.read_bytes(2), 'big')
                     id_num = int.from_bytes(self.read_bytes(1), 'big')
-                    print(f"Received DOWN message for id {id_num} at position ({x}, {y})")
+                    
+                    event = {'type': 'touch', 'action': 'down', 
+                             'id': id_num, 'x': x, 'y': y}
+                    self.events.put(event)
+                    # print(f"Received DOWN message for id {id_num} at position ({x}, {y})")
+
                 except Exception as e:
                     print(f"Error processing DOWN: {e}")
             
@@ -82,7 +90,12 @@ class SerialHandler:
                     x = int.from_bytes(self.read_bytes(2), 'big')
                     y = int.from_bytes(self.read_bytes(2), 'big')
                     id_num = int.from_bytes(self.read_bytes(1), 'big')
-                    print(f"Received UP message for id {id_num} at position ({x}, {y})")
+
+                    event = {'type': 'touch', 'action': 'up',
+                             'id': id_num, 'x': x, 'y': y}
+                    self.events.put(event)
+                    # print(f"Received UP message for id {id_num} at position ({x}, {y})")
+
                 except Exception as e:
                     print(f"Error processing UP: {e}")
             
@@ -91,7 +104,12 @@ class SerialHandler:
                     x = int.from_bytes(self.read_bytes(2), 'big')
                     y = int.from_bytes(self.read_bytes(2), 'big')
                     id_num = int.from_bytes(self.read_bytes(1), 'big')
-                    print(f"Received MOVE message for id {id_num} at position ({x}, {y})")
+
+                    event = {'type': 'touch', 'action': 'move',
+                             'id': id_num, 'x': x, 'y': y}
+                    self.events.put(event)
+                    # print(f"Received MOVE message for id {id_num} at position ({x}, {y})")
+
                 except Exception as e:
                     print(f"Error processing MOVE: {e}")
 
