@@ -4,6 +4,7 @@ let cols = 96;
 let cellW, cellH;
 let dotMatrix = [];
 
+// connect to WebSocket server from config.js
 let socket = new WebSocket(WS_HOST);
 
 function setup() {
@@ -16,7 +17,6 @@ function setup() {
     dotMatrix[i] = Array(cols).fill(0);
   }
 
-  // Connect to WebSocket server from config.js
   socket.onmessage = (event) => {
     console.log("Matrix raw event:", event.data);
     let data = JSON.parse(event.data);

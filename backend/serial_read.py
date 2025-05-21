@@ -24,15 +24,36 @@ class SerialHandler:
             data += self.ser.read(n - len(data))
         return data
 
+    def sync_header(self):
+        while self.running:
+            try:
+                # read one byte at a time until 'M' is found
+                b = self.ser.read(1)
+                if b == b'M':
+                    peek = self.ser.read(3)
+                    if peek == b'FDN':
+                        return b'MFDN'
+                    elif peek ==b'FUP':
+                        return b'MFUP'
+                    elif peek == b'FMV':
+                        return b'MFMV'
+                    elif peek == b'MAT':
+                        return b'MMAT'
+                    else:
+                        # skip ahead one byte and try again
+                        continue
+            except Exception as e:
+                print("Serial sync error:", e)
+
     def read_loop(self):
         while self.running:
             try:
-                header = self.read_bytes(4)
+                header = self.sync_header()
             except Exception as e:
                 print(f"Serial read header failed: {e}")
                 continue
 
-            if header == b'DOTS':
+            if header == b'MMAT':
                 try:
                     n = int.from_bytes(self.read_bytes(2), 'big')
                     m = int.from_bytes(self.read_bytes(2), 'big')
@@ -45,38 +66,34 @@ class SerialHandler:
                     print(f"Received matrix of shape {mat.shape}")
 
                 except Exception as e:
-                    print(f"Failed to handle DOTS message: {e}")
+                    print(f"Failed to handle MMAT message: {e}")
 
-            # elif header == b'DOWN':
-            #     try:
-            #         x = int.from_bytes(self.read_bytes(2), 'big')
-            #         y = int.from_bytes(self.read_bytes(2), 'big')
-            #         id_num = int.from_bytes(self.read_bytes(1), 'big')
-            #         finger = self.get_finger(id_num)
-            #         finger['down'] = True
-            #         finger['x'], finger['y'] = x, y
-            #     except Exception as e:
-            #         print(f"Error processing DOWN: {e}")
-            #
-            # elif header == b'UP__':
-            #     try:
-            #         x = int.from_bytes(self.read_bytes(2), 'big')
-            #         y = int.from_bytes(self.read_bytes(2), 'big')
-            #         id_num = int.from_bytes(self.read_bytes(1), 'big')
-            #         finger = self.get_finger(id_num)
-            #         finger['down'] = False
-            #         finger['x'] = finger['y'] = None
-            #     except Exception as e:
-            #         print(f"Error processing UP: {e}")
-            #
-            # elif header == b'MOVE':
-            #     try:
-            #         x = int.from_bytes(self.read_bytes(2), 'big')
-            #         y = int.from_bytes(self.read_bytes(2), 'big')
-            #         id_num = int.from_bytes(self.read_bytes(1), 'big')
-            #         self.root.after(0, self.handle_move, id_num, x, y)
-            #     except Exception as e:
-            #         print(f"Error processing MOVE: {e}")
+            elif header == b'MFDN':
+                try:
+                    x = int.from_bytes(self.read_bytes(2), 'big')
+                    y = int.from_bytes(self.read_bytes(2), 'big')
+                    id_num = int.from_bytes(self.read_bytes(1), 'big')
+                    print(f"Received DOWN message for id {id_num} at position ({x}, {y})")
+                except Exception as e:
+                    print(f"Error processing DOWN: {e}")
+            
+            elif header == b'MFUP':
+                try:
+                    x = int.from_bytes(self.read_bytes(2), 'big')
+                    y = int.from_bytes(self.read_bytes(2), 'big')
+                    id_num = int.from_bytes(self.read_bytes(1), 'big')
+                    print(f"Received UP message for id {id_num} at position ({x}, {y})")
+                except Exception as e:
+                    print(f"Error processing UP: {e}")
+            
+            elif header == b'MFMV':
+                try:
+                    x = int.from_bytes(self.read_bytes(2), 'big')
+                    y = int.from_bytes(self.read_bytes(2), 'big')
+                    id_num = int.from_bytes(self.read_bytes(1), 'big')
+                    print(f"Received MOVE message for id {id_num} at position ({x}, {y})")
+                except Exception as e:
+                    print(f"Error processing MOVE: {e}")
 
             else:
                 print(f"Unknown header: {header}")
