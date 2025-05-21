@@ -4,6 +4,8 @@ import threading
 import numpy as np
 import queue
 
+from gestures import GestureDetector
+
 SERIAL_PORT = 'COM6'
 BAUDRATE = 115200
 
@@ -15,6 +17,8 @@ class SerialHandler:
         self.running = True
         self.matrix = None
         self.events = queue.Queue()
+
+        self.gesture_detector = GestureDetector()
 
         self.lock = threading.Lock()
         self.read_thread = threading.Thread(target=self.read_loop, daemon=True)
@@ -108,6 +112,10 @@ class SerialHandler:
                     event = {'type': 'touch', 'action': 'move',
                              'id': id_num, 'x': x, 'y': y}
                     self.events.put(event)
+
+                    gesture = self.gesture_detector.update(id, x, y)
+                    if gesture:
+                        print(f"[Gesture Detected] finger {id}: {gesture}")
                     # print(f"Received MOVE message for id {id_num} at position ({x}, {y})")
 
                 except Exception as e:
