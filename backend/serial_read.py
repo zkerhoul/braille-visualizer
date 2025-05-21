@@ -4,7 +4,7 @@ import threading
 import numpy as np
 import queue
 
-SERIAL_PORT = '/dev/tty.usbmodem1101'
+SERIAL_PORT = 'COM6'
 BAUDRATE = 115200
 
 class SerialHandler:
