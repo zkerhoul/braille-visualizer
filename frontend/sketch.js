@@ -36,7 +36,7 @@ function handleMessage(event) {
       down: false,
       x: null,
       y: null,
-      color: color(random(255), random(255), random(255), 200),
+      color: color(255, 255, 255, 200),
     };
     if (msg.action == "down") {
       finger.down = true;
@@ -46,8 +46,10 @@ function handleMessage(event) {
       finger.down = false;
       finger.x = null;
       finger.y = null;
+      finger.color = getGestureColor(null)
     } else if (msg.action == "move") {
       if (finger.down == true) {
+        finger.color = getGestureColor(msg.gesture)
         stroke(finger.color);
         strokeWeight(40);
         line(finger.x, finger.y, msg.x, msg.y);
@@ -56,8 +58,15 @@ function handleMessage(event) {
       finger.y = msg.y;
     }
     fingers[msg.id] = finger;
-  } else if (msg.type == "gesture") {
-    // TODO
+  }
+}
+
+function getGestureColor(gesture) {
+  if (gesture === "scrubbing") {
+    return color(255, 0, 0, 200);
+  }
+  else {
+    return color(255, 255, 255, 200);
   }
 }
 
@@ -73,7 +82,7 @@ function draw() {
       fill(dotMatrix[i][j] ? "white" : "#444");
       // only draw the circles that appear on the device
       if (j % 3 != 2 && i % 5 != 4) {
-        ellipse(x + cellWidth / 2, y + cellHeight / 2, cellWidth * 0.7, cellHeight * 0.7);
+        ellipse(x + cellWidth / 2, y + cellHeight / 2, cellWidth * 0.56, cellHeight * 0.56);
       }
     }
   }

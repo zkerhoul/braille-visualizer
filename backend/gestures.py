@@ -1,4 +1,4 @@
-# === backend/sketch.js ===
+# === backend/gestures.py ===
 import time
 from collections import deque
 
@@ -20,35 +20,29 @@ class GestureDetector:
         return self.detect(self.history[id_num])
 
     def detect(self, path):
-        # not enough data to determine
         if len(path) < 5:
             return None
 
-        x0, y0, _ = path[0]
-        x1, y1, _ = path[-1]
-        dx = x1 - x0
-        dy = y1 - y0
-        net_dist = (dx ** 2 + dy ** 2) ** 0.5
+        x_path = [p[0] for p in path]
+        y_path = [p[1] for p in path]
 
-        total_dist = sum(
-            ((path[i][0] - path[i - 1][0]) ** 2 +
-             (path[i][1] - path[i - 1][1]) ** 2) ** 0.5
-            for i in range(1, len(path))
-        )
+        dx = max(x_path) - min(x_path)
+        dy = max(y_path) - min(y_path)
 
-        ratio = total_dist / (net_dist + 1e-5)
+        # check that horizontal movement is minimal
+        if dx > 25:
+            print(f"[NEGATIVE] Exceeded horizontal threshold - dx = {dx}")
+            return None
 
-        vertical_motion = abs(dy)
-        horizontal_motion = abs(dx)
+        # estimate zero-crossings (up-down movements)
+        y_mid = sorted(y_path)[len(y_path) // 2]
+        y_signs = [1 if y > y_mid else -1 for y in y_path]
+        y_crossings = sum(1 for i in range(1, len(y_signs)) if y_signs[i] != y_signs[i - 1])
 
-        if vertical_motion > 30 and horizontal_motion < 10 and total_dist > 100:
-            return f"scrubbing - vertical motion: {vertical_motion} horizontal motion: {horizontal_motion}"
+        if y_crossings < 2:
+            print(f"[NEGATIVE] Too few crossings - y_crossings = {y_crossings}")
+            return None
 
-        # if ratio > 4 and total_dist > 100:
-        #     return "scrubbing"
-        # if dx < -50:
-        #     return "regression"
-        # if dx > 50 and ratio < 1.5:
-        #     return "tracking"
+        print(f"\n[POSITIVE] Scrubbing detected - dx = {dx}, y_crossings = {y_crossings}\n")
 
-        return None
+        return "scrubbing"
