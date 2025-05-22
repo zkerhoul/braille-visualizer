@@ -112,11 +112,13 @@ class SerialHandler:
                     event = {'type': 'touch', 'action': 'move',
                              'id': id_num, 'x': x, 'y': y}
                     self.events.put(event)
-
-                    gesture = self.gesture_detector.update(id, x, y)
-                    if gesture:
-                        print(f"[Gesture Detected] finger {id}: {gesture}")
                     # print(f"Received MOVE message for id {id_num} at position ({x}, {y})")
+
+                    gesture = self.gesture_detector.update(id_num, x, y)
+                    if gesture:
+                        event = {'type': 'gesture', 'gesture': gesture, 'id': id_num}
+                        self.events.put(event)
+                        print(f"[Gesture Detected] finger {id_num}: {gesture}")
 
                 except Exception as e:
                     print(f"Error processing MOVE: {e}")

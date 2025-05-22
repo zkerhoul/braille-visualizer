@@ -7,19 +7,20 @@ class GestureDetector:
         self.history = {}  # dictionary: finger ID -> list of recent (x, y, t)
         self.window = window_ms
 
-    def update(self, id, x, y):
+    def update(self, id_num, x, y):
         now = time.time() * 1000
-        if id not in self.history:
-            self.history[id] = deque()
-        self.history[id].append((x, y, now))
+        if id_num not in self.history:
+            self.history[id_num] = deque()
+        self.history[id_num].append((x, y, now))
 
-        # clean data older than window
-        while self.history[id] and now - self.history[id][0][2] > self.window:
-            self.history[id].popleft()
+        # clear data older than window
+        while self.history[id_num] and now - self.history[id_num][0][2] > self.window:
+            self.history[id_num].popleft()
 
-        return self.detect(self.history[id])
+        return self.detect(self.history[id_num])
 
     def detect(self, path):
+        # not enough data to determine
         if len(path) < 5:
             return None
 
@@ -37,11 +38,17 @@ class GestureDetector:
 
         ratio = total_dist / (net_dist + 1e-5)
 
-        if ratio > 4 and total_dist > 100:
-            return "scrubbing"
-        if dx < -50:
-            return "regression"
-        if dx > 50 and ratio < 1.5:
-            return "tracking"
+        vertical_motion = abs(dy)
+        horizontal_motion = abs(dx)
+
+        if vertical_motion > 30 and horizontal_motion < 10 and total_dist > 100:
+            return f"scrubbing - vertical motion: {vertical_motion} horizontal motion: {horizontal_motion}"
+
+        # if ratio > 4 and total_dist > 100:
+        #     return "scrubbing"
+        # if dx < -50:
+        #     return "regression"
+        # if dx > 50 and ratio < 1.5:
+        #     return "tracking"
 
         return None

@@ -56,6 +56,8 @@ function handleMessage(event) {
       finger.y = msg.y;
     }
     fingers[msg.id] = finger;
+  } else if (msg.type == "gesture") {
+    // TODO
   }
 }
 
