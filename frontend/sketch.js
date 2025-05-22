@@ -1,6 +1,7 @@
 // === frontend/sketch.js ===
 let rows = 20;
 let cols = 96;
+let padding = 50;
 let cellWidth, cellHeight;
 
 let dotMatrix = [];
@@ -10,10 +11,10 @@ let fingers = {};
 let socket = new WebSocket(WS_HOST);
 
 function setup() {
-  createCanvas(1600, 350);
+  createCanvas(1600 + padding, 350 + padding);
 
-  cellWidth = width / cols;
-  cellHeight = height / rows;
+  cellWidth = (width - padding) / cols;
+  cellHeight = (height - padding) / rows;
 
   // initialize empty matrix
   for (let i = 0; i < rows; i++) {
@@ -36,12 +37,13 @@ function handleMessage(event) {
       down: false,
       x: null,
       y: null,
-      color: color(255, 255, 255, 200),
+      color: color(255, 255, 255, 200)
+      // color: color(random(255), random(255), random(255), 200)
     };
     if (msg.action == "down") {
       finger.down = true;
-      finger.x = msg.x;
-      finger.y = msg.y;
+      finger.x = map(msg.x, 0, 1600, (padding / 2), width - (padding / 2));
+      finger.y = map(msg.y, 0, 350, (padding / 2), height - (padding / 2));
     } else if (msg.action == "up") {
       finger.down = false;
       finger.x = null;
@@ -52,10 +54,12 @@ function handleMessage(event) {
         finger.color = getGestureColor(msg.gesture)
         stroke(finger.color);
         strokeWeight(40);
-        line(finger.x, finger.y, msg.x, msg.y);
+        x_new = map(msg.x, 0, 1600, (padding / 2), width - (padding / 2));
+        y_new = map(msg.y, 0, 350, (padding / 2), height - (padding / 2));
+        line(finger.x, finger.y, x_new, y_new);
       }
-      finger.x = msg.x;
-      finger.y = msg.y;
+      finger.x = map(msg.x, 0, 1600, (padding / 2), width - (padding / 2));
+      finger.y = map(msg.y, 0, 350, (padding / 2), height - (padding / 2));
     }
     fingers[msg.id] = finger;
   }
@@ -77,8 +81,8 @@ function draw() {
 
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
-      let x = j * cellWidth;
-      let y = i * cellHeight;
+      let x = j * cellWidth + (padding / 2);
+      let y = i * cellHeight + (padding / 2);
       fill(dotMatrix[i][j] ? "white" : "#444");
       // only draw the circles that appear on the device
       if (j % 3 != 2 && i % 5 != 4) {

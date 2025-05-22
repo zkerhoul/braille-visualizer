@@ -31,7 +31,7 @@ class GestureDetector:
 
         # check that horizontal movement is minimal
         if dx > 25:
-            print(f"[NEGATIVE] Exceeded horizontal threshold - dx = {dx}")
+            # print(f"[NEGATIVE] Exceeded horizontal threshold - dx = {dx}")
             return None
 
         # estimate zero-crossings (up-down movements)
@@ -40,9 +40,8 @@ class GestureDetector:
         y_crossings = sum(1 for i in range(1, len(y_signs)) if y_signs[i] != y_signs[i - 1])
 
         if y_crossings < 2:
-            print(f"[NEGATIVE] Too few crossings - y_crossings = {y_crossings}")
+            # print(f"[NEGATIVE] Too few crossings - y_crossings = {y_crossings}")
             return None
 
-        print(f"\n[POSITIVE] Scrubbing detected - dx = {dx}, y_crossings = {y_crossings}\n")
-
+        # print(f"\n[POSITIVE] Scrubbing detected - dx = {dx}, y_crossings = {y_crossings}\n")
         return "scrubbing"
