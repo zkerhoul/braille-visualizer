@@ -120,7 +120,7 @@ class SerialHandler:
                         'y': y
                     }
                     self.events.put(event)
-                    print(f"Received MOVE message for id {id_num} at position ({x}, {y})")
+                    # print(f"Received MOVE message for id {id_num} at position ({x}, {y})")
 
                 except Exception as e:
                     print(f"Error processing MOVE: {e}")

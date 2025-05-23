@@ -50,8 +50,9 @@ function handleMessage(event) {
       finger.y = null;
       finger.color = getGestureColor(null)
     } else if (msg.action == "move") {
+      console.log("MOVE: ", msg);
       if (finger.down == true) {
-        finger.color = getGestureColor(msg.gesture)
+        finger.color = getGestureColor(msg.gesture);
         stroke(finger.color);
         strokeWeight(40);
         x_new = map(msg.x, 0, 1600, (padding / 2), width - (padding / 2));
@@ -69,6 +70,11 @@ function getGestureColor(gesture) {
   if (gesture === "scrubbing") {
     return color(255, 0, 0, 200);
   }
+
+  else if (gesture === "regression") {
+    return color(0, 255, 0, 200)
+  }
+
   else {
     return color(255, 255, 255, 200);
   }
