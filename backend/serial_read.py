@@ -45,6 +45,8 @@ class SerialHandler:
                         return b'MFMV'
                     elif peek == b'MAT': # matrix update
                         return b'MMAT'
+                    elif peek == b'DTP': # double tap
+                        return b'DTP'
                     else:
                         # skip ahead one byte and try again
                         continue
@@ -95,8 +97,13 @@ class SerialHandler:
                     y = int.from_bytes(self.read_bytes(2), 'big')
                     id_num = int.from_bytes(self.read_bytes(1), 'big')
 
-                    event = {'type': 'touch', 'action': 'up',
-                             'id': id_num, 'x': x, 'y': y}
+                    event = {
+                        'type': 'touch',
+                        'action': 'up',
+                        'id': id_num,
+                        'x': x,
+                        'y': y
+                    }
                     self.events.put(event)
                     # print(f"Received UP message for id {id_num} at position ({x}, {y})")
 
@@ -124,6 +131,21 @@ class SerialHandler:
 
                 except Exception as e:
                     print(f"Error processing MOVE: {e}")
+
+            elif header == b'DTP':
+                try:
+                    x = int.from_bytes(self.read_bytes(2), 'big')
+                    y = int.from_bytes(self.read_bytes(2), 'big')
+
+                    event = {
+                        'type': 'double tap',
+                        'row': x,
+                        'column': y
+                    }
+                    self.events.put(event)
+                    print(f"Received DOUBLE TAP message at position ({x}, {y})")
+                except Exception as e:
+                    print(f"Error processing DOUBLE TAP: {e}")
 
             else:
                 print(f"Unknown header: {header}")

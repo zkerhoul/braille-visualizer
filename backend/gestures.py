@@ -29,7 +29,7 @@ class GestureDetector:
         if len(path) < 5:
             return None
 
-        if self.is_scrubbing(path):
+        if self.is_scrubbing(path, last_gesture):
             return "scrubbing"
 
         elif self.is_regression(path, last_gesture):
@@ -38,12 +38,17 @@ class GestureDetector:
         else:
             return None
 
-    def is_scrubbing(self, path):
+    def is_scrubbing(self, path, last_gesture):
         x_path = [p[0] for p in path]
         y_path = [p[1] for p in path]
 
         x_range = max(x_path) - min(x_path)
         y_range = max(y_path) - min(y_path)
+
+        # check if we are in the middle of scrubbing
+        dx = x_path[-1] - x_path[-2]
+        if last_gesture == "scrubbing" and dx == 0:
+            return True
 
         # check that horizontal movement is minimal
         if x_range > 25:
@@ -83,10 +88,10 @@ class GestureDetector:
         backward = False
         for i in range(1, len(x_path)):
             dx = x_path[i] - x_path[i - 1]
-            if dx > 5:
+            if dx > 2:
                 # print(f"[LOG] Forward movement detected - dx: {dx}")
                 forward = True
-            if dx < -5 and (forward is True or last_gesture == "scrubbing"):
+            if dx < -2 and (forward is True or last_gesture == "scrubbing"):
                 # print(f"[LOG] Backward movement detected - dx: {dx}")
                 backward = True
                 break

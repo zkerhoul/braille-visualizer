@@ -5,6 +5,7 @@ let padding = 50;
 let cellWidth, cellHeight;
 
 let dotMatrix = [];
+let doubleTaps = [];
 let fingers = {};
 
 // connect to WebSocket server from config.js
@@ -32,13 +33,14 @@ function handleMessage(event) {
 
   if (msg.type == "matrix") {
     dotMatrix = msg.mat;
-  } else if (msg.type == "touch") {
+  }
+
+  else if (msg.type == "touch") {
     let finger = fingers[msg.id] || {
       down: false,
       x: null,
       y: null,
       color: color(255, 255, 255, 200)
-      // color: color(random(255), random(255), random(255), 200)
     };
     if (msg.action == "down") {
       finger.down = true;
@@ -63,6 +65,20 @@ function handleMessage(event) {
       finger.y = map(msg.y, 0, 350, (padding / 2), height - (padding / 2));
     }
     fingers[msg.id] = finger;
+  }
+
+  else if (msg.type == "double tap") {
+    row_idx = msg.row * 5
+    y_idxs = [row_idx, row_idx + 1, row_idx + 2, row_idx + 3]
+
+    col_idx = msg.column * 3
+    x_idxs = [col_idx, col_idx + 1]
+
+    for (let x of x_idxs) {
+      for (let y of y_idxs) {
+        doubleTaps.push({'x_idx': x, 'y_idx': y, 'life': 300})
+      }
+    }
   }
 }
 
@@ -95,5 +111,24 @@ function draw() {
         ellipse(x + cellWidth / 2, y + cellHeight / 2, cellWidth * 0.56, cellHeight * 0.56);
       }
     }
+  }
+
+  for (let i = doubleTaps.length - 1; i >= 0; i--) {
+    let dt = doubleTaps[i];
+    let x = dt.x_idx * cellWidth + (padding / 2);
+    let y = dt.y_idx * cellHeight + (padding / 2);
+    let alpha = map(dt.life, 0, 300, 0, 100);
+    fill(0, 210, 255, alpha);
+    ellipse(x + cellWidth / 2, y + cellHeight / 2, cellWidth * 0.56, cellHeight * 0.56);
+
+    console.log(dt)
+    dt.life = dt.life - 5;
+    if (dt.life === 0) {
+      doubleTaps.splice(i, 1);
+    }
+    else {
+      doubleTaps[i] = dt;
+    }
+
   }
 }
