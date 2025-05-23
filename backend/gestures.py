@@ -3,23 +3,28 @@ import time
 from collections import deque
 
 class GestureDetector:
-    def __init__(self, window_ms=1000):
-        self.history = {}  # dictionary: finger ID -> list of recent (x, y, t)
+    def __init__(self, window_ms=750):
         self.window = window_ms
+
+        self.history = {}  # dictionary: finger ID -> list of recent (x, y, t)
+        self.last_gesture = {}
 
     def update(self, id_num, x, y):
         now = time.time() * 1000
         if id_num not in self.history:
             self.history[id_num] = deque()
+            self.last_gesture[id_num] = None
         self.history[id_num].append((x, y, now))
 
         # clear data older than window
         while self.history[id_num] and now - self.history[id_num][0][2] > self.window:
             self.history[id_num].popleft()
 
-        return self.detect(self.history[id_num])
+        gesture = self.detect(self.history[id_num], self.last_gesture[id_num])
+        self.last_gesture[id_num] = gesture
+        return gesture
 
-    def detect(self, path):
+    def detect(self, path, last_gesture):
         # not enough data
         if len(path) < 5:
             return None
@@ -27,7 +32,7 @@ class GestureDetector:
         if self.is_scrubbing(path):
             return "scrubbing"
 
-        elif self.is_regression(path):
+        elif self.is_regression(path, last_gesture):
             return "regression"
 
         else:
@@ -57,13 +62,18 @@ class GestureDetector:
         # print(f"\n[POSITIVE] Scrubbing detected - dx = {dx}, y_crossings = {y_crossings}\n")
         return True
 
-    def is_regression(self, path):
+    def is_regression(self, path, last_gesture):
         x_path = [p[0] for p in path]
         y_path = [p[1] for p in path]
 
-        y_range = max(y_path) - min(y_path)
+        # check if we are in the middle of a regression
+        dx = x_path[-1] - x_path[-2]
+        dy = y_path[-1] - y_path[-2]
+        if last_gesture == "regression" and dx <= 0 and dy <= 50:
+            return True
 
         # check that we're on the same braille line
+        y_range = max(y_path) - min(y_path)
         if y_range > 50:
             # print(f"[LOG] Exceeded vertical threshold - y_range: {y_range}")
             return False
@@ -76,7 +86,7 @@ class GestureDetector:
             if dx > 5:
                 # print(f"[LOG] Forward movement detected - dx: {dx}")
                 forward = True
-            if dx < -5 and forward is True:
+            if dx < -5 and (forward is True or last_gesture == "scrubbing"):
                 # print(f"[LOG] Backward movement detected - dx: {dx}")
                 backward = True
                 break
