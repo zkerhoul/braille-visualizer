@@ -1,7 +1,10 @@
 // === frontend/sketch.js ===
-let rows = 20;
-let cols = 96;
-let padding = 50;
+let ROWS = 20;
+let COLS = 96;
+let PADDING = 50;
+let GESTURE_COLORS;
+let DEFAULT_COLOR;
+
 let cellWidth, cellHeight;
 
 let dotMatrix = [];
@@ -12,14 +15,22 @@ let fingers = {};
 let socket = new WebSocket(WS_HOST);
 
 function setup() {
-  createCanvas(1600 + padding, 350 + padding);
+  createCanvas(1600 + PADDING, 350 + PADDING);
 
-  cellWidth = (width - padding) / cols;
-  cellHeight = (height - padding) / rows;
+  cellWidth = (width - PADDING) / COLS;
+  cellHeight = (height - PADDING) / ROWS;
+
+  // initialize gesture colors
+  DEFAULT_COLOR = color(255, 255, 255, 200);
+
+  GESTURE_COLORS = {
+    scrubbing: color(255, 0, 0, 200),
+    regression: color(255, 0, 255, 200)
+  };
 
   // initialize empty matrix
-  for (let i = 0; i < rows; i++) {
-    dotMatrix[i] = Array(cols).fill(0);
+  for (let i = 0; i < ROWS; i++) {
+    dotMatrix[i] = Array(COLS).fill(0);
   }
 
   socket.onmessage = handleMessage;
@@ -40,12 +51,12 @@ function handleMessage(event) {
       down: false,
       x: null,
       y: null,
-      color: color(255, 255, 255, 200)
+      color: DEFAULT_COLOR
     };
     if (msg.action == "down") {
       finger.down = true;
-      finger.x = map(msg.x, 0, 1600, (padding / 2), width - (padding / 2));
-      finger.y = map(msg.y, 0, 350, (padding / 2), height - (padding / 2));
+      finger.x = map(msg.x, 0, 1600, (PADDING / 2), width - (PADDING / 2));
+      finger.y = map(msg.y, 0, 350, (PADDING / 2), height - (PADDING / 2));
     } else if (msg.action == "up") {
       finger.down = false;
       finger.x = null;
@@ -56,12 +67,12 @@ function handleMessage(event) {
         finger.color = getGestureColor(msg.gesture);
         stroke(finger.color);
         strokeWeight(40);
-        x_new = map(msg.x, 0, 1600, (padding / 2), width - (padding / 2));
-        y_new = map(msg.y, 0, 350, (padding / 2), height - (padding / 2));
+        x_new = map(msg.x, 0, 1600, (PADDING / 2), width - (PADDING / 2));
+        y_new = map(msg.y, 0, 350, (PADDING / 2), height - (PADDING / 2));
         line(finger.x, finger.y, x_new, y_new);
       }
-      finger.x = map(msg.x, 0, 1600, (padding / 2), width - (padding / 2));
-      finger.y = map(msg.y, 0, 350, (padding / 2), height - (padding / 2));
+      finger.x = map(msg.x, 0, 1600, (PADDING / 2), width - (PADDING / 2));
+      finger.y = map(msg.y, 0, 350, (PADDING / 2), height - (PADDING / 2));
     }
     fingers[msg.id] = finger;
   }
@@ -82,17 +93,7 @@ function handleMessage(event) {
 }
 
 function getGestureColor(gesture) {
-  if (gesture === "scrubbing") {
-    return color(255, 0, 0, 200);
-  }
-
-  else if (gesture === "regression") {
-    return color(255, 0, 255, 200)
-  }
-
-  else {
-    return color(255, 255, 255, 200);
-  }
+  return GESTURE_COLORS[gesture] || DEFAULT_COLOR;
 }
 
 function draw() {
@@ -100,10 +101,10 @@ function draw() {
   fill(0, 0, 0, 20);
   rect(0, 0, width, height);
 
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      let x = j * cellWidth + (padding / 2);
-      let y = i * cellHeight + (padding / 2);
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLS; j++) {
+      let x = j * cellWidth + (PADDING / 2);
+      let y = i * cellHeight + (PADDING / 2);
       fill(dotMatrix[i][j] ? "white" : "#444");
       // only draw the circles that appear on the device
       if (j % 3 != 2 && i % 5 != 4) {
@@ -114,8 +115,8 @@ function draw() {
 
   for (let i = doubleTaps.length - 1; i >= 0; i--) {
     let dt = doubleTaps[i];
-    let x = dt.x_idx * cellWidth + (padding / 2);
-    let y = dt.y_idx * cellHeight + (padding / 2);
+    let x = dt.x_idx * cellWidth + (PADDING / 2);
+    let y = dt.y_idx * cellHeight + (PADDING / 2);
     let alpha = map(dt.life, 0, 300, 0, 200);
     fill(0, 210, 255, alpha);
     ellipse(x + cellWidth / 2, y + cellHeight / 2, cellWidth * 0.56, cellHeight * 0.56);
