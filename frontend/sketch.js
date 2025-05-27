@@ -88,7 +88,7 @@ function getGestureColor(gesture) {
   }
 
   else if (gesture === "regression") {
-    return color(0, 255, 0, 200)
+    return color(255, 0, 255, 200)
   }
 
   else {
@@ -117,12 +117,12 @@ function draw() {
     let dt = doubleTaps[i];
     let x = dt.x_idx * cellWidth + (padding / 2);
     let y = dt.y_idx * cellHeight + (padding / 2);
-    let alpha = map(dt.life, 0, 300, 0, 100);
+    let alpha = map(dt.life, 0, 300, 0, 200);
     fill(0, 210, 255, alpha);
     ellipse(x + cellWidth / 2, y + cellHeight / 2, cellWidth * 0.56, cellHeight * 0.56);
 
     console.log(dt)
-    dt.life = dt.life - 5;
+    dt.life = dt.life - 3;
     if (dt.life === 0) {
       doubleTaps.splice(i, 1);
     }
