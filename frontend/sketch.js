@@ -52,7 +52,6 @@ function handleMessage(event) {
       finger.y = null;
       finger.color = getGestureColor(null)
     } else if (msg.action == "move") {
-      console.log("MOVE: ", msg);
       if (finger.down == true) {
         finger.color = getGestureColor(msg.gesture);
         stroke(finger.color);
@@ -121,7 +120,6 @@ function draw() {
     fill(0, 210, 255, alpha);
     ellipse(x + cellWidth / 2, y + cellHeight / 2, cellWidth * 0.56, cellHeight * 0.56);
 
-    console.log(dt)
     dt.life = dt.life - 3;
     if (dt.life === 0) {
       doubleTaps.splice(i, 1);
