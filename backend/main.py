@@ -3,6 +3,7 @@ import os
 import uvicorn
 import asyncio
 from contextlib import asynccontextmanager
+from queue import Empty
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
@@ -54,7 +55,7 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             try:
                 event = ser.events.get_nowait()
-            except Exception:
+            except Empty:
                 await asyncio.sleep(0.01)
                 continue
 
