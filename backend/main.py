@@ -59,11 +59,14 @@ async def websocket_endpoint(websocket: WebSocket):
                 await asyncio.sleep(0.01)
                 continue
 
-            for client in clients:
+            for client in clients[:]:
                 try:
                     await client.send_json(event)
                 except Exception as e:
                     print("Error sending event to sketch: ", e)
+                    print("Removing stale client...")
+                    await client.close()
+                    clients.remove(client)
 
     except WebSocketDisconnect:
         print("Client disconnected")
