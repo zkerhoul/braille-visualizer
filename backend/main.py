@@ -65,7 +65,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 except Exception as e:
                     print("Error sending event to sketch: ", e)
                     print("Removing stale client...")
-                    await client.close()
                     clients.remove(client)
 
     except WebSocketDisconnect:
