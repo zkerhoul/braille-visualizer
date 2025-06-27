@@ -7,6 +7,7 @@ let cellWidth, cellHeight;
 
 let scaleFactor;
 let offsetX, offsetY;
+let dotMatrix = [];
 
 fingers = {};
 
@@ -93,11 +94,24 @@ function drawGrid() {
   let cellW = gridWidth / cols;
   let cellH = gridHeight / rows;
 
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      let x = VIRTUAL_PADDING + c * cellW;
-      let y = VIRTUAL_PADDING + r * cellH;
-      rect(x, y, cellW, cellH);
-    }
+//  for (let r = 0; r < rows; r++) {
+//    for (let c = 0; c < cols; c++) {
+//      let x = VIRTUAL_PADDING + c * cellW;
+//      let y = VIRTUAL_PADDING + r * cellH;
+//      rect(x, y, cellW, cellH);
+//    }
+//  }
+
+  noStroke();
+  if (dotMatrix.length == rows - 1) {
+      for (let r = 0; r < rows - 1; r++) {
+        for (let c = 0; c < cols - 1; c++) {
+            val = dotMatrix[r][c]
+            let x = VIRTUAL_PADDING + (c + 1) * cellW + (cellW/2);
+            let y = VIRTUAL_PADDING + (r + 1) * cellH + (cellH/2);
+            fill(val == 1 ? 255 : 68);
+            ellipse(x, y, cellW * 0.56, cellH * 0.56)
+        }
+      }
   }
 }
