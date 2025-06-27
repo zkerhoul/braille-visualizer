@@ -1,41 +1,4 @@
 // === frontend/sketch.js ===
-
-// function handleMessage(event) {
-//   const msg = JSON.parse(event.data);
-//
-//   if (msg.type === "matrix") {
-//     // Received a new 20×96 array → update and mark bgLayer dirty
-//     dotMatrix = msg.mat;
-//     bgNeedsRedraw = true;
-//   }
-//   else if (msg.type === "touch") {
-//     let fid = msg.id;
-//     if (msg.action === "down") {
-//       // Finger went down → add to fingers map
-//       let cx = map(msg.x, 0, 1600, PADDING/2, width - PADDING/2);
-//       let cy = map(msg.y, 0, 350,  PADDING/2, height - PADDING/2);
-//       let c  = GESTURE_COLORS[msg.gesture] || DEFAULT_COLOR;
-//       fingers[fid] = { x: cx, y: cy, color: c };
-//     }
-//     else if (msg.action === "move") {
-//       // Finger moved → update its x,y, color (if needed)
-//       if (fingers[fid]) {
-//         let cx = map(msg.x, 0, 1600, PADDING/2, width - PADDING/2);
-//         let cy = map(msg.y, 0, 350,  PADDING/2, height - PADDING/2);
-//         let c  = GESTURE_COLORS[msg.gesture] || DEFAULT_COLOR;
-//         fingers[fid].x     = cx;
-//         fingers[fid].y     = cy;
-//         fingers[fid].color = c;
-//       }
-//     }
-//     else if (msg.action === "up") {
-//       // Finger lifted → remove from map
-//       delete fingers[fid];
-//     }
-//   }
-// }
-//
-
 let VIRTUAL_WIDTH  = 1600;
 let VIRTUAL_HEIGHT = 350;
 let VIRTUAL_PADDING = 50;
