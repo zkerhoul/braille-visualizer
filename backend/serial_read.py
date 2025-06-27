@@ -97,8 +97,7 @@ class SerialHandler:
                 fid_byte = rest[4:5]
                 recv_crc = rest[5]
 
-                header = bytes([SOF_BYTE, ptype]) + \
-                    x_bytes + y_bytes + fid_byte
+                header = bytes([SOF_BYTE, ptype]) + x_bytes + y_bytes + fid_byte
                 calc_crc = crc8(header)
                 if recv_crc != calc_crc:
                     print(

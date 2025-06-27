@@ -44,6 +44,8 @@ function handleMessage(event) {
         let cy = map(msg.y, 0, 350,  VIRTUAL_PADDING/2, VIRTUAL_HEIGHT - VIRTUAL_PADDING/2);
         let c  = GESTURE_COLORS[msg.gesture] || DEFAULT_COLOR;
         fingers[fid].x     = cx;
+      }
+    }
   }
 }
 
