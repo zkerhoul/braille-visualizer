@@ -7,7 +7,7 @@ import queue
 from gestures import GestureDetector
 from serial_helper import *
 
-SERIAL_PORT = 'COM6'
+SERIAL_PORT = 'COM7'
 BAUDRATE = 115200
 
 
